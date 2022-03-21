@@ -1,0 +1,108 @@
+#fix capitalization
+#https://pypi.org/project/Random-Word/
+from random_word import RandomWords
+import requests
+r = RandomWords()
+letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+remainingLetters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+#jumpy, glent, brick, waqfs, vozhd
+rWord = r.get_random_word(hasDictionaryDef="true")
+while (rWord == None) or (len(rWord) != 5):
+    rWord = r.get_random_word(hasDictionaryDef="true")
+url = "https://api.dictionaryapi.dev/api/v2/entries/en/" + rWord
+res = requests.get(url)
+d = (res.json()[0])
+answer = ['r', 'o', 'u', 'n', 'd']
+answer = rWord
+maxGuess = 6
+currentGuess =0
+guessStatus =['_', '_', '_', '_', '_']
+isWinner = False
+while currentGuess < maxGuess:
+    isValid = True
+    correctLetters = 0
+    guess =['_', '_', '_', '_', '_']
+    guess = input ("Enter guess: ")
+    if len(guess) != 5:
+        print("has to be a 5 letter word!")
+        print("please try again!")
+        continue
+    #try:
+       # guessVal = "https://api.dictionaryapi.dev/api/v2/entries/en/" + guess
+    #except :
+       # pass
+    else:
+        print(guess)
+    for i in range(5):
+        tempCorrectLetters = correctLetters
+        if (guess[i] in letters) == False:
+            #is not a letter
+            isValid = False
+        else:
+            #is a letter
+            if guess[i] == answer[i]:
+                correctLetters +=1
+        if (tempCorrectLetters != correctLetters) and (guess[i] in answer):
+            #no match turn yellow
+            try:
+                guessStatus[i] = '\033[2;32;40m' + guess[i] + '\033[0;0m'
+                #locate index of the letter in giant list
+                tempIndex = remainingLetters.index(guess[i])
+                #set letter in giant list to a color if guessed
+                remainingLetters[tempIndex]= '\033[2;32;40m' + guess[i] + '\033[0;0m'
+            except:
+                pass
+        elif guess[i] in answer:
+            #if there is a match turn green
+            try:
+                guessStatus[i] = '\033[2;33;40m' + guess[i] + '\033[0;0m'
+                #locate index of the letter in giant list
+                tempIndex = remainingLetters.index(guess[i])
+                #set letter in giant list to a color if guessed
+                remainingLetters[tempIndex]= '\033[2;33;40m' + guess[i] + '\033[0;0m'
+            except:
+                pass
+        else:
+            try:
+                #locate index of the letter in giant list
+                tempIndex = remainingLetters.index(guess[i])
+                #set letter in giant list to red for guess but not in word at all
+                remainingLetters[tempIndex]= '\033[2;31;40m' + guess[i] + '\033[0;0m'
+            except:
+                pass
+    if correctLetters==5:
+        strAnswer = str(answer)
+        currentGuess+=1
+        strGuesses = str(currentGuess)
+        print("You guessed the correct word: \"" + strAnswer + "\" in: " +strGuesses + " guesses")
+        for h in guessStatus:
+            print(h, end=" ")
+        print("")
+        print("Definition: ")
+        print(d["meanings"][0]["definitions"][0]["definition"])
+        isWinner=True
+        break
+    elif isValid:
+        #valid guess was made but not correct answer
+        currentGuess+=1
+        print("not quite, try again!")
+        for i in guessStatus:
+            print(i, end=" ")
+        print("")
+        print("letters tried: ")
+        for h in remainingLetters:
+            print(h, end=" ")
+        print("")
+        tempGuess = str(currentGuess)
+        print("You have guessed " + tempGuess + " times")
+    else:
+        #input not valid e.g symbol or int
+        print("only lowercase alphabetical characters allowed")
+        print("please try again!")
+    guessStatus = ['_', '_', '_', '_', '_']
+if isWinner==False:
+    print("Sorry, you lost. Better Luck Next Time!")
+    print("word is:")
+    print(answer)
+    print("Definition: ")
+    print(d["meanings"][0]["definitions"][0]["definition"])
